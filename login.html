@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LifeFlow — Access Portal</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Outfit:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+    <style>
+        :root {
+            --bg-page: #f8fafc;
+            --card-glass: rgba(255, 255, 255, 0.88);
+            --card-border: rgba(255, 255, 255, 0.95);
+            --crimson: #e11d48;
+            --crimson-dark: #be123c;
+            --rose-light: #fff1f2;
+            --rose-border: rgba(225, 29, 72, 0.22);
+            --rose-glow: rgba(225, 29, 72, 0.35);
+            --gradient-primary: linear-gradient(135deg, #ff2a5f 0%, #e11d48 50%, #be123c 100%);
+            --gradient-subtle: linear-gradient(135deg, rgba(255, 42, 95, 0.08) 0%, rgba(225, 29, 72, 0.03) 100%);
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --font-body: 'Plus Jakarta Sans', sans-serif;
+            --font-head: 'Outfit', sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html, body {
+            min-height: 100vh;
+            width: 100%;
+            font-family: var(--font-body);
+            background-color: var(--bg-page);
+            color: var(--text-main);
+            overflow-x: hidden;
+        }
+
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            position: relative;
+        }
+
+        /* Ambient Radiant Blooms */
+        .ambient-bloom {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.65;
+        }
+        .bloom-1 {
+            top: -10%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 600px;
+            height: 380px;
+            background: radial-gradient(circle, rgba(254, 205, 211, 0.8) 0%, rgba(254, 226, 226, 0.3) 60%, transparent 100%);
+        }
+        .bloom-2 {
+            bottom: -8%;
+            right: 15%;
+            width: 450px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(254, 226, 226, 0.5) 0%, transparent 70%);
+        }
+
+        /* Background 3D Canvas & Liquid Cursor */
+        .blood-canvas-layer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 1;
+        }
+        #cursorCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        /* Floating Back Navigation */
+        .nav-back-pill {
+            position: fixed;
+            top: 20px;
+            left: 24px;
+            z-index: 100;
+            display: inline-flex;
+            align-items: center;
+            gap: 9px;
+            padding: 9px 18px;
+            background: rgba(255, 255, 255, 0.92);
+            border: 1px solid rgba(225, 29, 72, 0.18);
+            border-radius: 50px;
+            color: #0f172a;
+            font-weight: 700;
+            font-size: 0.84rem;
+            text-decoration: none;
+            backdrop-filter: blur(16px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.02);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .nav-back-pill i {
+            color: var(--crimson);
+            font-size: 0.82rem;
+            transition: transform 0.25s ease;
+        }
+        .nav-back-pill:hover {
+            transform: translateX(-3px);
+            color: var(--crimson);
+            background: #ffffff;
+            border-color: rgba(225, 29, 72, 0.4);
+            box-shadow: 0 8px 25px rgba(225, 29, 72, 0.15);
+        }
+        .nav-back-pill:hover i {
+            transform: translateX(-3px);
+        }
+
+        /* Modern Glassmorphic Container */
+        .auth-container {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 440px;
+            animation: cardSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes cardSlideUp {
+            0% { opacity: 0; transform: translateY(28px) scale(0.96); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .auth-glass-card {
+            background: var(--card-glass);
+            border: 1px solid var(--card-border);
+            border-radius: 30px;
+            padding: 28px 32px;
+            box-shadow: 0 25px 60px -12px rgba(225, 29, 72, 0.12),
+                        0 0 0 1px rgba(225, 29, 72, 0.06),
+                        0 8px 24px -4px rgba(0, 0, 0, 0.04);
+            backdrop-filter: blur(28px) saturate(190%);
+            -webkit-backdrop-filter: blur(28px) saturate(190%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Top Radiant Accent Line */
+        .accent-header-line {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3.5px;
+            background: linear-gradient(90deg, transparent, #ff2a5f 20%, #e11d48 50%, #ff2a5f 80%, transparent);
+            background-size: 200% 100%;
+            animation: pulseShimmer 3s infinite linear;
+        }
+        @keyframes pulseShimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* Header & Logo */
+        .card-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .logo-emblem {
+            width: 52px;
+            height: 52px;
+            margin: 0 auto 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--gradient-primary);
+            border-radius: 18px;
+            color: #ffffff;
+            font-size: 1.5rem;
+            box-shadow: 0 10px 24px -2px rgba(225, 29, 72, 0.42), 0 0 0 4px rgba(255, 255, 255, 0.85);
+            animation: emblemPulse 3s infinite ease-in-out;
+            position: relative;
+        }
+        @keyframes emblemPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); box-shadow: 0 14px 28px -2px rgba(225, 29, 72, 0.55), 0 0 0 6px rgba(254, 205, 211, 0.4); }
+        }
+        .card-header h2 {
+            font-family: var(--font-head);
+            font-size: 1.85rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            color: var(--text-main);
+            line-height: 1.15;
+        }
+        .card-header h2 span {
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .card-header .caption {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+            font-weight: 500;
+        }
+
+        /* Dynamic Alert Toast */
+        .toast-banner {
+            display: none;
+            align-items: center;
+            gap: 10px;
+            background: #fff1f2;
+            border: 1px solid #fecdd3;
+            color: #be123c;
+            padding: 9px 14px;
+            border-radius: 12px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            animation: shakeAlert 0.4s ease;
+        }
+        @keyframes shakeAlert {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-4px); }
+            40%, 80% { transform: translateX(4px); }
+        }
+
+        /* Role Selector - Interactive Segmented Cards */
+        .role-control-group {
+            margin-bottom: 16px;
+        }
+        .role-group-heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.74rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 7px;
+        }
+        .role-selector-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 9px;
+        }
+        .role-tile-label {
+            position: relative;
+            cursor: pointer;
+        }
+        .role-tile-label input {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+        .role-tile {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            padding: 9px 11px;
+            border-radius: 14px;
+            background: #ffffff;
+            border: 1.5px solid #e2e8f0;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+        }
+        .role-tile-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 10px;
+            background: #f1f5f9;
+            color: #64748b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.86rem;
+            flex-shrink: 0;
+            transition: all 0.25s ease;
+        }
+        .role-tile-text strong {
+            display: block;
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: var(--text-main);
+            line-height: 1.1;
+        }
+        .role-tile-text small {
+            display: block;
+            font-size: 0.67rem;
+            color: var(--text-muted);
+            margin-top: 1px;
+        }
+        .role-tile-label input:checked + .role-tile {
+            border-color: var(--crimson);
+            background: #fff8f8;
+            box-shadow: 0 4px 15px rgba(225, 29, 72, 0.12), 0 0 0 1px var(--crimson);
+        }
+        .role-tile-label input:checked + .role-tile .role-tile-icon {
+            background: var(--gradient-primary);
+            color: #ffffff;
+            box-shadow: 0 3px 10px rgba(225, 29, 72, 0.35);
+        }
+
+        /* Form Inputs */
+        .input-block {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 13px;
+        }
+        .input-block label {
+            font-size: 0.74rem;
+            font-weight: 700;
+            color: #334155;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .input-block label i {
+            color: var(--crimson);
+            font-size: 0.72rem;
+        }
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        .input-wrapper input {
+            width: 100%;
+            height: 42px;
+            padding: 0 12px 0 38px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 12px;
+            font-family: var(--font-body);
+            font-size: 0.88rem;
+            color: var(--text-main);
+            background: #ffffff;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+        }
+        .input-wrapper input:focus {
+            outline: none;
+            border-color: var(--crimson);
+            background: #ffffff;
+            box-shadow: 0 0 0 3.5px rgba(225, 29, 72, 0.12), 0 4px 12px rgba(225, 29, 72, 0.05);
+            transform: translateY(-1px);
+        }
+        .input-wrapper .leading-icon {
+            position: absolute;
+            left: 13px;
+            color: #94a3b8;
+            font-size: 0.84rem;
+            pointer-events: none;
+            transition: color 0.25s ease;
+        }
+        .input-wrapper input:focus ~ .leading-icon {
+            color: var(--crimson);
+        }
+        .btn-eye-toggle {
+            position: absolute;
+            right: 12px;
+            background: none;
+            border: none;
+            color: #94a3b8;
+            cursor: pointer;
+            font-size: 0.84rem;
+            padding: 4px;
+            transition: color 0.2s, transform 0.2s;
+        }
+        .btn-eye-toggle:hover {
+            color: var(--crimson);
+            transform: scale(1.1);
+        }
+
+        /* Action Button */
+        .btn-action-primary {
+            width: 100%;
+            height: 46px;
+            background: var(--gradient-primary);
+            color: #ffffff;
+            border: none;
+            border-radius: 13px;
+            font-family: var(--font-head);
+            font-weight: 800;
+            font-size: 0.96rem;
+            letter-spacing: 0.02em;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 9px;
+            box-shadow: 0 10px 24px -2px rgba(225, 29, 72, 0.42);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            margin-top: 5px;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-action-primary::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 60%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+            transform: skewX(-20deg);
+            transition: left 0.75s ease;
+        }
+        .btn-action-primary:hover::after {
+            left: 140%;
+        }
+        .btn-action-primary i {
+            transition: transform 0.25s ease;
+        }
+        .btn-action-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 28px -2px rgba(225, 29, 72, 0.52);
+        }
+        .btn-action-primary:hover i {
+            transform: translateX(4px);
+        }
+        .btn-action-primary:active {
+            transform: translateY(0);
+        }
+
+        /* Bottom Links */
+        .card-footer-nav {
+            margin-top: 15px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .card-footer-nav p {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+        }
+        .card-footer-nav a.accent-link {
+            color: var(--crimson);
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .card-footer-nav a.accent-link:hover {
+            text-decoration: underline;
+        }
+        .pill-hospital-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            font-size: 0.76rem;
+            font-weight: 700;
+            color: #2563eb;
+            background: #eff6ff;
+            border-radius: 50px;
+            border: 1px solid rgba(37, 99, 235, 0.16);
+            padding: 6px 14px;
+            cursor: pointer;
+            margin: 0 auto;
+            transition: all 0.2s ease;
+        }
+        .pill-hospital-btn:hover {
+            background: #dbeafe;
+            transform: translateY(-1px);
+        }
+
+        /* Hospital Staff Modal */
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            z-index: 2000;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+        .modal-backdrop.active {
+            display: flex;
+        }
+        .modal-window {
+            background: #ffffff;
+            border-radius: 24px;
+            padding: 28px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 25px 60px rgba(37, 99, 235, 0.25);
+            position: relative;
+            animation: cardSlideUp 0.35s ease;
+        }
+        .btn-modal-close {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            background: none;
+            border: none;
+            font-size: 1.25rem;
+            cursor: pointer;
+            color: #94a3b8;
+            transition: color 0.2s;
+        }
+        .btn-modal-close:hover { color: #0f172a; }
+        .modal-header-block {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+        .modal-icon-badge {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.15rem;
+        }
+        .modal-header-block h3 {
+            font-family: var(--font-head);
+            font-size: 1.25rem;
+            color: #0f172a;
+        }
+        .modal-header-block p {
+            font-size: 0.76rem;
+            color: #64748b;
+        }
+        .btn-modal-submit {
+            width: 100%;
+            height: 44px;
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 0.92rem;
+            cursor: pointer;
+            margin-top: 6px;
+            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
+            transition: all 0.2s;
+        }
+        .btn-modal-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(37, 99, 235, 0.4);
+        }
+
+        /* Responsive Mobile */
+        @media (max-width: 480px) {
+            body { padding: 12px; }
+            .auth-glass-card { padding: 22px 18px; border-radius: 24px; }
+            .role-selector-grid { grid-template-columns: 1fr; gap: 7px; }
+            .nav-back-pill { top: 12px; left: 12px; padding: 7px 14px; font-size: 0.78rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Ambient Glow Blooms -->
+    <div class="ambient-bloom bloom-1"></div>
+    <div class="ambient-bloom bloom-2"></div>
+
+    <!-- 3D Interactive Erythrocyte Simulation Canvas -->
+    <canvas id="loginBloodCanvas" class="blood-canvas-layer"></canvas>
+
+    <!-- Liquid Mouse Trail Canvas -->
+    <canvas id="cursorCanvas"></canvas>
+
+    <!-- Top Floating Back to Home Button -->
+    <a href="home.html" class="nav-back-pill" title="Return to Home">
+        <i class="fas fa-arrow-left"></i>
+        <span>Back to Home</span>
+    </a>
+
+    <!-- Auth Container -->
+    <div class="auth-container">
+        <div class="auth-glass-card">
+            <div class="accent-header-line"></div>
+            
+            <!-- Header -->
+            <div class="card-header">
+                <div class="logo-emblem">
+                    <i class="fas fa-droplet"></i>
+                </div>
+                <h2>Life<span>Flow</span> Portal</h2>
+                <p class="caption">Sign in to coordinate emergency blood requests & dispatches</p>
+            </div>
+
+            <!-- Dynamic Alert Toast -->
+            <div id="alertBanner" class="toast-banner">
+                <i class="fas fa-circle-exclamation"></i>
+                <span id="alertMsg">Invalid credentials entered.</span>
+            </div>
+
+            <!-- Login Form (Exclusively Login) -->
+            <form action="login.php" method="POST" id="loginForm">
+                <input type="hidden" name="action" value="login" />
+
+                <!-- Role Selector -->
+                <div class="role-control-group">
+                    <div class="role-group-heading">
+                        <span>Sign In As</span>
+                        <span>Select role</span>
+                    </div>
+                    <div class="role-selector-grid">
+                        <label class="role-tile-label">
+                            <input type="radio" name="role" value="user" checked>
+                            <div class="role-tile">
+                                <div class="role-tile-icon"><i class="fas fa-hand-holding-medical"></i></div>
+                                <div class="role-tile-text">
+                                    <strong>Requester</strong>
+                                    <small>Patient Blood Requests</small>
+                                </div>
+                            </div>
+                        </label>
+                        <label class="role-tile-label">
+                            <input type="radio" name="role" value="donor">
+                            <div class="role-tile">
+                                <div class="role-tile-icon"><i class="fas fa-heart-pulse"></i></div>
+                                <div class="role-tile-text">
+                                    <strong>Blood Donor</strong>
+                                    <small>Active Donor Dashboard</small>
+                                </div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Email Address -->
+                <div class="input-block">
+                    <label for="loginEmail"><i class="fas fa-envelope"></i> Email Address</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-envelope leading-icon"></i>
+                        <input type="email" id="loginEmail" name="email" placeholder="name@example.com" required autocomplete="email" />
+                    </div>
+                </div>
+
+                <!-- Password -->
+                <div class="input-block">
+                    <label for="loginPassword"><i class="fas fa-lock"></i> Account Password</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-shield-halved leading-icon"></i>
+                        <input type="password" id="loginPassword" name="password" placeholder="Enter your password" required autocomplete="current-password" />
+                        <button type="button" class="btn-eye-toggle" onclick="togglePasswordReveal('loginPassword', this)" title="Show/Hide Password">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="btn-action-primary" id="submitBtn">
+                    <span>Authenticate & Access</span>
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+
+            </form>
+
+            <!-- Card Footer Navigation -->
+            <div class="card-footer-nav">
+                <p>Don't have an account? <a href="register.html" class="accent-link">Register New Account &rarr;</a></p>
+                <button type="button" class="pill-hospital-btn" onclick="openHospModal()">
+                    <i class="fas fa-hospital"></i>
+                    <span>Healthcare Institution or Blood Bank Staff? Click Here</span>
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Hospital Login Modal -->
+    <div id="hospModal" class="modal-backdrop" onclick="closeHospOnBackdrop(event)">
+        <div class="modal-window">
+            <button type="button" class="btn-modal-close" onclick="closeHospModal()" title="Close">&times;</button>
+            <div class="modal-header-block">
+                <div class="modal-icon-badge"><i class="fas fa-hospital-user"></i></div>
+                <div>
+                    <h3>Hospital Portal</h3>
+                    <p>Clinical & blood bank staff authenticated access</p>
+                </div>
+            </div>
+            <form action="hospital/login.php" method="POST">
+                <input type="hidden" name="action" value="login" />
+                <div class="input-block">
+                    <label for="hospUid"><i class="fas fa-id-card"></i> Hospital UID / Code</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-hashtag leading-icon"></i>
+                        <input type="text" id="hospUid" name="hospital_uid" placeholder="e.g. HOSP-101" required />
+                    </div>
+                </div>
+                <div class="input-block">
+                    <label for="hospPwd"><i class="fas fa-lock"></i> Security Password</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-shield-halved leading-icon"></i>
+                        <input type="password" id="hospPwd" name="password" placeholder="Enter portal password" required />
+                    </div>
+                </div>
+                <button type="submit" class="btn-modal-submit">
+                    <i class="fas fa-arrow-right-to-bracket"></i> Sign In to Hospital Portal
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Password Visibility Toggle
+        function togglePasswordReveal(fieldId, btn) {
+            const input = document.getElementById(fieldId);
+            const icon = btn.querySelector('i');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+
+        // Hospital Modal Controls
+        function openHospModal() {
+            document.getElementById('hospModal').classList.add('active');
+        }
+        function closeHospModal() {
+            document.getElementById('hospModal').classList.remove('active');
+        }
+        function closeHospOnBackdrop(e) {
+            if (e.target.id === 'hospModal') {
+                closeHospModal();
+            }
+        }
+
+        // URL Error Handling
+        const urlParams = new URLSearchParams(window.location.search);
+        const error = urlParams.get('error');
+        const alertBanner = document.getElementById('alertBanner');
+        const alertMsg = document.getElementById('alertMsg');
+
+        if (urlParams.get('modal') === 'hospital') {
+            openHospModal();
+        }
+
+        if (error) {
+            alertBanner.style.display = 'flex';
+            if (error === 'invalid') {
+                alertMsg.textContent = 'Invalid email or password. Please verify your credentials.';
+            } else if (error === 'missing') {
+                alertMsg.textContent = 'Please enter both your email address and password.';
+            } else if (error === 'hospital_invalid') {
+                alertBanner.style.display = 'none';
+                openHospModal();
+                alert('Invalid Hospital UID or password.');
+            } else if (error === 'hospital_empty') {
+                alertBanner.style.display = 'none';
+                openHospModal();
+                alert('Please provide both Hospital UID and password.');
+            } else {
+                alertMsg.textContent = 'Authentication error. Please try again.';
+            }
+        }
+
+        // ---- 3D Bloodstream Canvas Simulation ----
+        const canvas = document.getElementById('loginBloodCanvas');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+        let cells = [];
+
+        function resizeCanvas() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class RBC {
+            constructor() {
+                this.reset();
+            }
+            reset() {
+                this.x = Math.random() * width;
+                this.y = height + Math.random() * 60;
+                this.z = Math.random() * 0.8 + 0.25;
+                this.baseR = (13 + Math.random() * 18) * this.z;
+                this.rx = this.baseR;
+                this.ry = this.baseR * (0.65 + Math.random() * 0.3);
+                this.speedY = (0.55 + Math.random() * 1.3) * this.z;
+                this.speedX = (Math.random() - 0.5) * 0.45;
+                this.angle = Math.random() * Math.PI * 2;
+                this.rotSpeed = (Math.random() - 0.5) * 0.02;
+                this.opacity = (0.25 + Math.random() * 0.35) * this.z;
+            }
+            update() {
+                this.y -= this.speedY;
+                this.x += this.speedX;
+                this.angle += this.rotSpeed;
+                if (this.y < -40) this.reset();
+            }
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.angle);
+
+                const grad = ctx.createRadialGradient(-this.rx * 0.25, -this.ry * 0.25, this.rx * 0.1, 0, 0, this.rx);
+                grad.addColorStop(0, `rgba(255, 120, 140, ${this.opacity})`);
+                grad.addColorStop(0.4, `rgba(225, 29, 72, ${this.opacity * 0.95})`);
+                grad.addColorStop(1, `rgba(159, 18, 57, ${this.opacity * 0.4})`);
+
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.ellipse(0, 0, this.rx, this.ry, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.beginPath();
+                ctx.ellipse(0, 0, this.rx * 0.4, this.ry * 0.35, 0, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(190, 18, 60, ${this.opacity * 0.5})`;
+                ctx.fill();
+
+                ctx.restore();
+            }
+        }
+
+        for (let i = 0; i < 35; i++) {
+            const c = new RBC();
+            c.y = Math.random() * height;
+            cells.push(c);
+        }
+
+        function loop() {
+            ctx.clearRect(0, 0, width, height);
+            for (let i = 0; i < cells.length; i++) {
+                cells[i].update();
+                cells[i].draw();
+            }
+            requestAnimationFrame(loop);
+        }
+        loop();
+
+        // ---- Liquid Cursor Droplets ----
+        const cCanvas = document.getElementById('cursorCanvas');
+        const cCtx = cCanvas.getContext('2d');
+        let cursorParticles = [];
+
+        function resizeCursorCanvas() {
+            cCanvas.width = window.innerWidth;
+            cCanvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCursorCanvas);
+        resizeCursorCanvas();
+
+        class DropletParticle {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.size = Math.random() * 5 + 2.5;
+                this.speedX = (Math.random() - 0.5) * 1.8;
+                this.speedY = Math.random() * 1.8 + 0.8;
+                this.opacity = 0.75;
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                this.size *= 0.95;
+                this.opacity -= 0.025;
+            }
+            draw() {
+                cCtx.fillStyle = `rgba(225, 29, 72, ${Math.max(0, this.opacity)})`;
+                cCtx.beginPath();
+                cCtx.arc(this.x, this.y, Math.max(0.1, this.size), 0, Math.PI * 2);
+                cCtx.fill();
+            }
+        }
+
+        window.addEventListener('mousemove', (e) => {
+            if (Math.random() > 0.45) {
+                cursorParticles.push(new DropletParticle(e.clientX, e.clientY));
+            }
+        });
+
+        function animateCursorParticles() {
+            cCtx.clearRect(0, 0, cCanvas.width, cCanvas.height);
+            for (let i = cursorParticles.length - 1; i >= 0; i--) {
+                const p = cursorParticles[i];
+                p.update();
+                p.draw();
+                if (p.opacity <= 0 || p.size <= 0.5) {
+                    cursorParticles.splice(i, 1);
+                }
+            }
+            requestAnimationFrame(animateCursorParticles);
+        }
+        animateCursorParticles();
+    </script>
+</body>
+</html>

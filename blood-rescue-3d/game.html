@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Blood Rescue 3D</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- ============ MAIN MENU ============ -->
+  <div id="main-menu" class="screen active">
+    <div class="menu-bg-accent"></div>
+    <div class="menu-content">
+      <div class="logo-badge">🩸</div>
+      <h1 class="game-title">BLOOD RESCUE <span>3D</span></h1>
+      <p class="game-subtitle">"Every second matters."</p>
+
+      <div class="menu-buttons">
+        <button id="btn-start" class="btn btn-primary">Start Mission</button>
+        <button id="btn-levels" class="btn btn-secondary">Levels</button>
+        <button id="btn-howto" class="btn btn-secondary">How to Play</button>
+        <button id="btn-about" class="btn btn-secondary">About</button>
+      </div>
+
+      <div class="menu-footer">Educational Simulation • Fictional Scenarios Only</div>
+    </div>
+  </div>
+
+  <!-- ============ LEVEL SELECT ============ -->
+  <div id="level-menu" class="screen">
+    <div class="panel-card wide">
+      <h2>Select Level</h2>
+      <div id="level-list" class="level-list"></div>
+      <button class="btn btn-secondary back-btn" data-back="main-menu">Back</button>
+    </div>
+  </div>
+
+  <!-- ============ HOW TO PLAY ============ -->
+  <div id="howto-menu" class="screen">
+    <div class="panel-card wide">
+      <h2>How to Play</h2>
+      <ul class="howto-list">
+        <li><strong>W A S D</strong> — Move around the hospital</li>
+        <li><strong>Mouse</strong> — Look around (click screen to lock camera)</li>
+        <li><strong>E</strong> — Interact with patients, donors, and rooms</li>
+        <li>Read the patient's blood requirement at mission start</li>
+        <li>Find a donor whose blood group matches the requirement</li>
+        <li>Escort the suitable donor to the Blood Collection Room and collect blood</li>
+        <li>Deliver the collected blood to the Emergency Room before time runs out</li>
+      </ul>
+      <button class="btn btn-secondary back-btn" data-back="main-menu">Back</button>
+    </div>
+  </div>
+
+  <!-- ============ ABOUT ============ -->
+  <div id="about-menu" class="screen">
+    <div class="panel-card wide">
+      <h2>About</h2>
+      <p>Blood Rescue 3D is an educational mini-game built as an extra feature for the Blood Connect
+      blood-donation website. It simulates a fictional emergency blood-rescue scenario to teach the
+      basics of blood group compatibility in a fun, gamified way.</p>
+      <p class="disclaimer">⚠ This game is an educational simulation using fictional characters and
+      scenarios. It is not a medical decision-making tool.</p>
+      <button class="btn btn-secondary back-btn" data-back="main-menu">Back</button>
+    </div>
+  </div>
+
+  <!-- ============ GAME SCREEN ============ -->
+  <div id="game-screen" class="screen">
+    <canvas id="game-canvas"></canvas>
+
+    <!-- HUD -->
+    <div id="hud">
+      <div class="hud-top-left">
+        <div id="hud-mission-name">MISSION 01</div>
+      </div>
+      <div class="hud-top-center">
+        <div id="hud-timer">02:00</div>
+      </div>
+      <div class="hud-top-right">
+        <div id="hud-score">Score: 0</div>
+        <div id="hud-xp">XP: 0</div>
+      </div>
+
+      <div id="objective-panel">
+        <div class="objective-title">OBJECTIVES</div>
+        <ul id="objective-list"></ul>
+      </div>
+
+      <div id="minimap-wrap">
+        <canvas id="minimap" width="150" height="150"></canvas>
+      </div>
+
+      <div id="bottom-objective">
+        <span id="current-objective-text">Find suitable donor</span>
+      </div>
+
+      <div id="interact-prompt" class="hidden">Press <strong>E</strong> to interact</div>
+
+      <div id="crosshair"></div>
+
+      <div id="control-guide">
+        <div><b>WASD</b> Move &nbsp; <b>Mouse</b> Look &nbsp; <b>E</b> Interact &nbsp; <b>Esc</b> Pause</div>
+      </div>
+
+      <button id="btn-pause" class="hud-icon-btn">⏸</button>
+    </div>
+
+    <!-- Click to play overlay (pointer lock) -->
+    <div id="click-to-play" class="overlay">
+      <div class="overlay-box">
+        <h3>Click to Start Moving</h3>
+        <p>Click anywhere to lock your mouse and begin.</p>
+      </div>
+    </div>
+
+    <!-- Dialogue / Info box -->
+    <div id="dialogue-box" class="overlay-box floating hidden"></div>
+
+    <!-- Pause menu -->
+    <div id="pause-menu" class="overlay hidden">
+      <div class="overlay-box">
+        <h3>Paused</h3>
+        <button class="btn btn-primary" id="btn-resume">Resume</button>
+        <button class="btn btn-secondary" id="btn-restart-mission">Restart Mission</button>
+        <button class="btn btn-secondary" id="btn-quit-menu">Main Menu</button>
+      </div>
+    </div>
+
+    <!-- Mission Complete -->
+    <div id="mission-complete" class="overlay hidden">
+      <div class="overlay-box result-box success">
+        <div class="result-emoji">🎉</div>
+        <h2>MISSION COMPLETE</h2>
+        <p>Blood successfully delivered.</p>
+        <div class="result-stats">
+          <div>Score: <span id="mc-score">+100</span></div>
+          <div>XP: <span id="mc-xp">+100</span></div>
+        </div>
+        <div class="result-buttons">
+          <button class="btn btn-primary" id="btn-next-level">Next Level</button>
+          <button class="btn btn-secondary" id="btn-replay">Replay</button>
+          <button class="btn btn-secondary" id="btn-mc-menu">Main Menu</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mission Failed -->
+    <div id="mission-failed" class="overlay hidden">
+      <div class="overlay-box result-box failure">
+        <div class="result-emoji">🚨</div>
+        <h2>MISSION FAILED</h2>
+        <p id="fail-reason">Time expired.</p>
+        <div class="result-buttons">
+          <button class="btn btn-primary" id="btn-retry">Retry</button>
+          <button class="btn btn-secondary" id="btn-mf-menu">Main Menu</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Emergency briefing (mission start) -->
+    <div id="briefing" class="overlay hidden">
+      <div class="overlay-box briefing-box">
+        <div class="briefing-header">🚨 PATIENT EMERGENCY</div>
+        <div class="briefing-row"><span>Patient:</span><strong id="brief-patient">Arjun</strong></div>
+        <div class="briefing-row"><span>Blood Group Needed:</span><strong id="brief-bloodgroup">O+</strong></div>
+        <div class="briefing-row"><span>Units Required:</span><strong id="brief-units">1</strong></div>
+        <div class="briefing-row"><span>Emergency Level:</span><strong id="brief-level">High</strong></div>
+        <div class="briefing-row"><span>Time Remaining:</span><strong id="brief-time">120s</strong></div>
+        <p class="briefing-objective">Find a suitable donor and deliver the required blood.</p>
+        <button class="btn btn-primary" id="btn-begin-mission">Begin</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ LIBRARIES ============ -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+
+  <!-- ============ GAME SCRIPTS ============ -->
+  <script type="module" src="js/levels.js"></script>
+  <script type="module" src="js/donor.js"></script>
+  <script type="module" src="js/mission.js"></script>
+  <script type="module" src="js/player.js"></script>
+  <script type="module" src="js/interaction.js"></script>
+  <script type="module" src="js/ui.js"></script>
+  <script type="module" src="js/game.js"></script>
+</body>
+</html>

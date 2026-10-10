@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LifeFlow — Member Registration</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Outfit:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+    <style>
+        :root {
+            --bg-page: #f8fafc;
+            --card-glass: rgba(255, 255, 255, 0.9);
+            --card-border: rgba(255, 255, 255, 0.98);
+            --crimson: #e11d48;
+            --crimson-dark: #be123c;
+            --rose-light: #fff1f2;
+            --rose-border: rgba(225, 29, 72, 0.22);
+            --rose-glow: rgba(225, 29, 72, 0.35);
+            --gradient-primary: linear-gradient(135deg, #ff2a5f 0%, #e11d48 50%, #be123c 100%);
+            --gradient-subtle: linear-gradient(135deg, rgba(255, 42, 95, 0.08) 0%, rgba(225, 29, 72, 0.03) 100%);
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --font-body: 'Plus Jakarta Sans', sans-serif;
+            --font-head: 'Outfit', sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html, body {
+            min-height: 100vh;
+            width: 100%;
+            font-family: var(--font-body);
+            background-color: var(--bg-page);
+            color: var(--text-main);
+            overflow-x: hidden;
+        }
+
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px 16px;
+            position: relative;
+        }
+
+        /* Ambient Radiant Blooms */
+        .ambient-bloom {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.65;
+        }
+        .bloom-1 {
+            top: -10%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 800px;
+            height: 450px;
+            background: radial-gradient(circle, rgba(254, 205, 211, 0.85) 0%, rgba(254, 226, 226, 0.35) 60%, transparent 100%);
+        }
+        .bloom-2 {
+            bottom: -8%;
+            right: 15%;
+            width: 500px;
+            height: 350px;
+            background: radial-gradient(circle, rgba(254, 226, 226, 0.55) 0%, transparent 70%);
+        }
+        .bloom-3 {
+            top: 30%;
+            left: -5%;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(255, 42, 95, 0.08) 0%, transparent 70%);
+        }
+
+        /* Background 3D Canvas & Liquid Cursor */
+        .blood-canvas-layer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 1;
+        }
+        #cursorCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        /* Floating Back Navigation */
+        .nav-back-pill {
+            position: fixed;
+            top: 20px;
+            left: 24px;
+            z-index: 100;
+            display: inline-flex;
+            align-items: center;
+            gap: 9px;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.92);
+            border: 1px solid rgba(225, 29, 72, 0.18);
+            border-radius: 50px;
+            color: #0f172a;
+            font-weight: 700;
+            font-size: 0.84rem;
+            text-decoration: none;
+            backdrop-filter: blur(16px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.02);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .nav-back-pill i {
+            color: var(--crimson);
+            font-size: 0.82rem;
+            transition: transform 0.25s ease;
+        }
+        .nav-back-pill:hover {
+            transform: translateX(-3px);
+            color: var(--crimson);
+            background: #ffffff;
+            border-color: rgba(225, 29, 72, 0.4);
+            box-shadow: 0 8px 25px rgba(225, 29, 72, 0.15);
+        }
+        .nav-back-pill:hover i {
+            transform: translateX(-3px);
+        }
+
+        /* Modern Glassmorphic Container — BIGGER */
+        .auth-container {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 780px;
+            animation: cardSlideUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes cardSlideUp {
+            0% { opacity: 0; transform: translateY(32px) scale(0.95); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .auth-glass-card {
+            background: var(--card-glass);
+            border: 1px solid var(--card-border);
+            border-radius: 36px;
+            padding: 36px 44px 32px;
+            box-shadow: 0 30px 80px -16px rgba(225, 29, 72, 0.18),
+                        0 0 0 1px rgba(225, 29, 72, 0.07),
+                        0 10px 30px -5px rgba(0, 0, 0, 0.05);
+            backdrop-filter: blur(32px) saturate(200%);
+            -webkit-backdrop-filter: blur(32px) saturate(200%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Subtle inner glow */
+        .auth-glass-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 36px;
+            padding: 1px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,255,255,0.2), rgba(225,29,72,0.08), rgba(255,255,255,0.7));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+        }
+
+        /* Top Radiant Accent Line */
+        .accent-header-line {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, transparent, #ff2a5f 20%, #e11d48 50%, #ff2a5f 80%, transparent);
+            background-size: 200% 100%;
+            animation: pulseShimmer 3s infinite linear;
+        }
+
+        @keyframes pulseShimmer {
+            0% { background-position: 0% 0; }
+            100% { background-position: 200% 0; }
+        }
+
+        /* Header & Logo */
+        .card-header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        .header-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            background: #fff1f2;
+            border: 1px solid rgba(225, 29, 72, 0.2);
+            padding: 5px 16px;
+            border-radius: 50px;
+            font-size: 0.76rem;
+            font-weight: 800;
+            color: var(--crimson);
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 10px rgba(225, 29, 72, 0.06);
+        }
+        .header-badge .badge-ping {
+            width: 7px;
+            height: 7px;
+            background: var(--crimson);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--crimson);
+            animation: pingPulse 1.8s infinite;
+        }
+        @keyframes pingPulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.5); opacity: 0.5; }
+        }
+        .card-header h2 {
+            font-family: var(--font-head);
+            font-size: 2.3rem;
+            font-weight: 800;
+            letter-spacing: -0.025em;
+            color: var(--text-main);
+            line-height: 1.12;
+        }
+        .card-header h2 span {
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .card-header .caption {
+            font-size: 0.92rem;
+            color: var(--text-muted);
+            margin-top: 6px;
+            font-weight: 500;
+            max-width: 480px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.5;
+        }
+
+        /* Dynamic Alert Toast */
+        .toast-banner {
+            display: none;
+            align-items: center;
+            gap: 12px;
+            background: #fff1f2;
+            border: 1px solid #fecdd3;
+            color: #be123c;
+            padding: 12px 18px;
+            border-radius: 14px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            animation: shakeAlert 0.4s ease;
+        }
+
+        @keyframes shakeAlert {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-6px); }
+            75% { transform: translateX(6px); }
+        }
+
+        /* Role Selector - Interactive Segmented Cards */
+        .role-control-group {
+            margin-bottom: 22px;
+        }
+        .role-group-heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+        }
+        .role-selector-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+        .role-tile-label {
+            position: relative;
+            cursor: pointer;
+        }
+        .role-tile-label input {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+        .role-tile {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 16px 20px;
+            border-radius: 18px;
+            background: #ffffff;
+            border: 1.5px solid #e2e8f0;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+        }
+        .role-tile-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            background: #f1f5f9;
+            color: #64748b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.15rem;
+            flex-shrink: 0;
+            transition: all 0.3s ease;
+        }
+        .role-tile-text strong {
+            display: block;
+            font-size: 0.96rem;
+            font-weight: 700;
+            color: var(--text-main);
+            line-height: 1.2;
+        }
+        .role-tile-text small {
+            display: block;
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            margin-top: 3px;
+            line-height: 1.3;
+        }
+        .role-tile-label input:checked + .role-tile {
+            border-color: var(--crimson);
+            background: #fff8f8;
+            box-shadow: 0 6px 24px rgba(225, 29, 72, 0.15), 0 0 0 1.5px var(--crimson);
+            transform: translateY(-1px);
+        }
+        .role-tile-label input:checked + .role-tile .role-tile-icon {
+            background: var(--gradient-primary);
+            color: #ffffff;
+            box-shadow: 0 4px 14px rgba(225, 29, 72, 0.4);
+            transform: scale(1.05);
+        }
+
+        /* 2-Column Form Fields Grid */
+        .form-grid-2col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px 18px;
+            margin-bottom: 24px;
+        }
+        .input-block {
+            display: flex;
+            flex-direction: column;
+        }
+        .input-block label {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #334155;
+            margin-bottom: 7px;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            letter-spacing: 0.01em;
+        }
+        .input-block label i {
+            color: var(--crimson);
+            font-size: 0.78rem;
+            width: 14px;
+            text-align: center;
+        }
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        .input-wrapper input, .input-wrapper select {
+            width: 100%;
+            height: 50px;
+            padding: 0 16px 0 44px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 14px;
+            font-family: var(--font-body);
+            font-size: 0.94rem;
+            color: var(--text-main);
+            background: #ffffff;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+        }
+        .input-wrapper input:focus, .input-wrapper select:focus {
+            outline: none;
+            border-color: var(--crimson);
+            background: #ffffff;
+            box-shadow: 0 0 0 4px rgba(225, 29, 72, 0.1), 0 6px 16px rgba(225, 29, 72, 0.06);
+            transform: translateY(-1.5px);
+        }
+        .input-wrapper .leading-icon {
+            position: absolute;
+            left: 16px;
+            color: #94a3b8;
+            font-size: 0.94rem;
+            pointer-events: none;
+            transition: color 0.3s ease;
+        }
+        .input-wrapper input:focus ~ .leading-icon,
+        .input-wrapper select:focus ~ .leading-icon {
+            color: var(--crimson);
+        }
+        .btn-eye-toggle {
+            position: absolute;
+            right: 14px;
+            background: none;
+            border: none;
+            color: #94a3b8;
+            cursor: pointer;
+            font-size: 0.94rem;
+            padding: 6px;
+            transition: color 0.2s, transform 0.2s;
+        }
+        .btn-eye-toggle:hover {
+            color: var(--crimson);
+            transform: scale(1.12);
+        }
+
+        /* Action Button — Bigger */
+        .btn-action-primary {
+            width: 100%;
+            height: 56px;
+            background: var(--gradient-primary);
+            color: #ffffff;
+            border: none;
+            border-radius: 16px;
+            font-family: var(--font-head);
+            font-weight: 800;
+            font-size: 1.06rem;
+            letter-spacing: 0.025em;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            box-shadow: 0 12px 30px -4px rgba(225, 29, 72, 0.5);
+            transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-action-primary::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 60%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transform: skewX(-20deg);
+            transition: left 0.8s ease;
+        }
+        .btn-action-primary:hover::after {
+            left: 140%;
+        }
+        .btn-action-primary i {
+            transition: transform 0.3s ease;
+            font-size: 1.1rem;
+        }
+        .btn-action-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 18px 36px -4px rgba(225, 29, 72, 0.58);
+        }
+        .btn-action-primary:hover i {
+            transform: scale(1.25);
+        }
+        .btn-action-primary:active {
+            transform: translateY(-1px);
+        }
+
+        /* Bottom Links */
+        .card-footer-nav {
+            margin-top: 22px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .card-footer-nav p {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+        .card-footer-nav a.accent-link {
+            color: var(--crimson);
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.2s;
+            position: relative;
+        }
+        .card-footer-nav a.accent-link::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 0;
+            height: 1.5px;
+            background: var(--crimson);
+            transition: width 0.3s ease;
+        }
+        .card-footer-nav a.accent-link:hover::after {
+            width: 100%;
+        }
+        .pill-hospital-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 0.84rem;
+            font-weight: 700;
+            color: #2563eb;
+            text-decoration: none;
+            background: #eff6ff;
+            border-radius: 50px;
+            border: 1px solid rgba(37, 99, 235, 0.16);
+            padding: 10px 22px;
+            margin: 0 auto;
+            transition: all 0.3s ease;
+        }
+        .pill-hospital-btn:hover {
+            background: #dbeafe;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(37, 99, 235, 0.15);
+        }
+        .pill-hospital-btn i {
+            font-size: 0.9rem;
+        }
+
+        /* ============================================================
+           NEW: "Register Your Hospital" — PILL DESIGN (MATCHING IMAGE)
+           ============================================================ */
+        .btn-register-hospital-pill {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            padding: 12px 28px;
+            margin-top: 14px;
+            font-family: var(--font-body);
+            font-size: 0.88rem;
+            font-weight: 700;
+            letter-spacing: 0.01em;
+            color: #2563eb;
+            text-decoration: none;
+            background: #eff6ff;
+            border: 1px solid rgba(37, 99, 235, 0.22);
+            border-radius: 50px;
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.06);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .btn-register-hospital-pill i {
+            font-size: 0.9rem;
+            color: #2563eb;
+            transition: transform 0.3s ease, color 0.3s ease;
+        }
+
+        /* Hover effect */
+        .btn-register-hospital-pill:hover {
+            background: #dbeafe;
+            border-color: rgba(37, 99, 235, 0.4);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 22px rgba(37, 99, 235, 0.18);
+            color: #1d4ed8;
+        }
+
+        .btn-register-hospital-pill:hover i {
+            transform: scale(1.15) rotate(90deg);
+            color: #1d4ed8;
+        }
+
+        .btn-register-hospital-pill:active {
+            transform: translateY(0);
+        }
+
+        /* Subtle shimmer sweep on hover */
+        .btn-register-hospital-pill::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -120%;
+            width: 60%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.7), transparent);
+            transform: skewX(-20deg);
+            transition: left 0.7s ease;
+        }
+        .btn-register-hospital-pill:hover::before {
+            left: 150%;
+        }
+
+        /* Responsive adjustments for the pill button */
+        @media (max-width: 720px) {
+            .btn-register-hospital-pill {
+                padding: 10px 20px;
+                font-size: 0.82rem;
+                border-radius: 40px;
+                gap: 8px;
+            }
+            .btn-register-hospital-pill i {
+                font-size: 0.85rem;
+            }
+        }
+
+        @media (max-width: 420px) {
+            .btn-register-hospital-pill {
+                padding: 9px 16px;
+                font-size: 0.78rem;
+                border-radius: 36px;
+                gap: 7px;
+            }
+            .btn-register-hospital-pill i {
+                font-size: 0.8rem;
+            }
+        }
+
+        /* Responsive Mobile (original) */
+        @media (max-width: 720px) {
+            body { padding: 16px 12px; }
+            .auth-glass-card { padding: 28px 20px 24px; border-radius: 28px; }
+            .card-header h2 { font-size: 1.8rem; }
+            .card-header .caption { font-size: 0.84rem; }
+            .form-grid-2col { grid-template-columns: 1fr; gap: 14px; }
+            .role-selector-grid { grid-template-columns: 1fr; gap: 10px; }
+            .role-tile { padding: 14px 16px; }
+            .nav-back-pill { top: 12px; left: 12px; padding: 8px 14px; font-size: 0.78rem; }
+            .btn-action-primary { height: 52px; font-size: 1rem; }
+        }
+
+        @media (max-width: 420px) {
+            .auth-glass-card { padding: 22px 14px 20px; border-radius: 24px; }
+            .card-header h2 { font-size: 1.55rem; }
+            .header-badge { font-size: 0.68rem; padding: 4px 12px; }
+            .role-tile-icon { width: 38px; height: 38px; font-size: 1rem; }
+            .role-tile-text strong { font-size: 0.88rem; }
+            .role-tile-text small { font-size: 0.72rem; }
+            .input-wrapper input, .input-wrapper select { height: 46px; font-size: 0.88rem; }
+            .btn-action-primary { height: 48px; font-size: 0.94rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Ambient Glow Blooms -->
+    <div class="ambient-bloom bloom-1"></div>
+    <div class="ambient-bloom bloom-2"></div>
+    <div class="ambient-bloom bloom-3"></div>
+
+    <!-- 3D Interactive Erythrocyte Simulation Canvas -->
+    <canvas id="registerBloodCanvas" class="blood-canvas-layer"></canvas>
+
+    <!-- Liquid Mouse Trail Canvas -->
+    <canvas id="cursorCanvas"></canvas>
+
+    <!-- Top Floating Back to Home Button -->
+    <a href="home.html" class="nav-back-pill" title="Return to Home">
+        <i class="fas fa-arrow-left"></i>
+        <span>Back to Home</span>
+    </a>
+
+    <!-- Auth Container — Bigger & More Attractive -->
+    <div class="auth-container">
+        <div class="auth-glass-card">
+            <div class="accent-header-line"></div>
+            
+            <!-- Header -->
+            <div class="card-header">
+                <div class="header-badge">
+                    <span class="badge-ping"></span>
+                    <span>LifeFlow Community</span>
+                </div>
+                <h2>Life<span>Flow</span> Connect</h2>
+                <p class="caption">Join our life-saving community to request blood or register as a donor. Every drop counts.</p>
+            </div>
+
+            <!-- Dynamic Alert Toast -->
+            <div id="alertBanner" class="toast-banner">
+                <i class="fas fa-circle-exclamation"></i>
+                <span id="alertMsg">Registration error occurred.</span>
+            </div>
+
+            <!-- Registration Form -->
+            <form action="login.php" method="POST" id="registerForm">
+                <input type="hidden" name="action" value="register" />
+
+                <!-- Role Selector -->
+                <div class="role-control-group">
+                    <div class="role-group-heading">
+                        <span>Select Account Type</span>
+                        <span style="color: var(--crimson); font-weight: 800;">* Required</span>
+                    </div>
+                    <div class="role-selector-grid">
+                        <label class="role-tile-label">
+                            <input type="radio" name="role" value="user" checked>
+                            <div class="role-tile">
+                                <div class="role-tile-icon"><i class="fas fa-hand-holding-medical"></i></div>
+                                <div class="role-tile-text">
+                                    <strong>Requester</strong>
+                                    <small>Request blood for patients</small>
+                                </div>
+                            </div>
+                        </label>
+                        <label class="role-tile-label">
+                            <input type="radio" name="role" value="donor">
+                            <div class="role-tile">
+                                <div class="role-tile-icon"><i class="fas fa-heart-pulse"></i></div>
+                                <div class="role-tile-text">
+                                    <strong>Blood Donor</strong>
+                                    <small>Receive urgent donor alerts</small>
+                                </div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 2-Column Form Fields Grid -->
+                <div class="form-grid-2col">
+                    
+                    <!-- Full Name -->
+                    <div class="input-block">
+                        <label for="fullName"><i class="fas fa-user"></i> Full Legal Name</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-user-circle leading-icon"></i>
+                            <input type="text" id="fullName" name="full_name" placeholder="John Doe" required autocomplete="name" />
+                        </div>
+                    </div>
+
+                    <!-- Email Address -->
+                    <div class="input-block">
+                        <label for="emailAddr"><i class="fas fa-envelope"></i> Email Address</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-envelope leading-icon"></i>
+                            <input type="email" id="emailAddr" name="email" placeholder="name@example.com" required autocomplete="email" />
+                        </div>
+                    </div>
+
+                    <!-- Blood Group -->
+                    <div class="input-block">
+                        <label for="bloodType"><i class="fas fa-droplet"></i> Blood Group</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-tint leading-icon"></i>
+                            <select id="bloodType" name="blood_type" required>
+                                <option value="" disabled selected>Select Blood Group</option>
+                                <option value="A+">A Positive (A+)</option>
+                                <option value="A-">A Negative (A-)</option>
+                                <option value="B+">B Positive (B+)</option>
+                                <option value="B-">B Negative (B-)</option>
+                                <option value="O+">O Positive (O+)</option>
+                                <option value="O-">O Negative (O-)</option>
+                                <option value="AB+">AB Positive (AB+)</option>
+                                <option value="AB-">AB Negative (AB-)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Contact Phone Number -->
+                    <div class="input-block">
+                        <label for="phoneNum"><i class="fas fa-phone"></i> Contact Phone</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-phone-alt leading-icon"></i>
+                            <input type="tel" id="phoneNum" name="phone" placeholder="e.g. 9876543210" required autocomplete="tel" />
+                        </div>
+                    </div>
+
+                    <!-- City / Location -->
+                    <div class="input-block">
+                        <label for="cityLoc"><i class="fas fa-location-dot"></i> City / District</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-city leading-icon"></i>
+                            <input type="text" id="cityLoc" name="city" placeholder="e.g. Coimbatore, Chennai" required autocomplete="address-level2" />
+                        </div>
+                    </div>
+
+                    <!-- Security Password -->
+                    <div class="input-block">
+                        <label for="regPassword"><i class="fas fa-shield-halved"></i> Security Password</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-lock leading-icon"></i>
+                            <input type="password" id="regPassword" name="password" placeholder="Min. 6 characters" required autocomplete="new-password" minlength="6" />
+                            <button type="button" class="btn-eye-toggle" onclick="togglePasswordReveal('regPassword', this)" title="Show/Hide Password">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="btn-action-primary" id="submitBtn">
+                    <i class="fas fa-heart"></i>
+                    <span>Complete Registration & Save Lives</span>
+                </button>
+
+            </form>
+
+            <!-- Card Footer Navigation -->
+            <div class="card-footer-nav">
+                <p>Already registered with LifeFlow? <a href="login.html" class="accent-link">Sign In to your account &rarr;</a></p>
+                <a href="hospital/register.php" class="pill-hospital-btn">
+                    <i class="fas fa-hospital"></i>
+                    <span>Register Your Hospital</span>
+                </a>
+            </div>
+
+            <!-- ✅ NEW: Pill-shaped "Register Your Hospital" Button (matches image) -->
+          
+
+        </div>
+    </div>
+
+    <script>
+        // Password Visibility Toggle
+        function togglePasswordReveal(fieldId, btn) {
+            const input = document.getElementById(fieldId);
+            const icon = btn.querySelector('i');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+
+        // URL Error Handling
+        const urlParams = new URLSearchParams(window.location.search);
+        const error = urlParams.get('error');
+        const alertBanner = document.getElementById('alertBanner');
+        const alertMsg = document.getElementById('alertMsg');
+
+        if (error) {
+            alertBanner.style.display = 'flex';
+            if (error === 'missing') {
+                alertMsg.textContent = 'Please fill in all required registration fields.';
+            } else if (error === 'exists') {
+                alertMsg.textContent = 'An account with this email address already exists. Please Sign In.';
+            } else if (error === 'failed') {
+                alertMsg.textContent = 'Database registration failed. Please verify details and try again.';
+            } else {
+                alertMsg.textContent = 'Registration failed. Please check your information.';
+            }
+        }
+
+        // ---- 3D Bloodstream Canvas Simulation ----
+        const canvas = document.getElementById('registerBloodCanvas');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+        let cells = [];
+
+        function resizeCanvas() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class RBC {
+            constructor() {
+                this.reset();
+            }
+            reset() {
+                this.x = Math.random() * width;
+                this.y = height + Math.random() * 60;
+                this.z = Math.random() * 0.8 + 0.25;
+                this.baseR = (13 + Math.random() * 18) * this.z;
+                this.rx = this.baseR;
+                this.ry = this.baseR * (0.65 + Math.random() * 0.3);
+                this.speedY = (0.55 + Math.random() * 1.3) * this.z;
+                this.speedX = (Math.random() - 0.5) * 0.45;
+                this.angle = Math.random() * Math.PI * 2;
+                this.rotSpeed = (Math.random() - 0.5) * 0.02;
+                this.opacity = (0.25 + Math.random() * 0.35) * this.z;
+            }
+            update() {
+                this.y -= this.speedY;
+                this.x += this.speedX;
+                this.angle += this.rotSpeed;
+                if (this.y < -40) this.reset();
+            }
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.angle);
+
+                const grad = ctx.createRadialGradient(-this.rx * 0.25, -this.ry * 0.25, this.rx * 0.1, 0, 0, this.rx);
+                grad.addColorStop(0, `rgba(255, 120, 140, ${this.opacity})`);
+                grad.addColorStop(0.4, `rgba(225, 29, 72, ${this.opacity * 0.95})`);
+                grad.addColorStop(1, `rgba(159, 18, 57, ${this.opacity * 0.4})`);
+
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.ellipse(0, 0, this.rx, this.ry, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.beginPath();
+                ctx.ellipse(0, 0, this.rx * 0.4, this.ry * 0.35, 0, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(190, 18, 60, ${this.opacity * 0.5})`;
+                ctx.fill();
+
+                ctx.restore();
+            }
+        }
+
+        for (let i = 0; i < 35; i++) {
+            const c = new RBC();
+            c.y = Math.random() * height;
+            cells.push(c);
+        }
+
+        function loop() {
+            ctx.clearRect(0, 0, width, height);
+            for (let i = 0; i < cells.length; i++) {
+                cells[i].update();
+                cells[i].draw();
+            }
+            requestAnimationFrame(loop);
+        }
+        loop();
+
+        // ---- Liquid Cursor Droplets ----
+        const cCanvas = document.getElementById('cursorCanvas');
+        const cCtx = cCanvas.getContext('2d');
+        let cursorParticles = [];
+
+        function resizeCursorCanvas() {
+            cCanvas.width = window.innerWidth;
+            cCanvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCursorCanvas);
+        resizeCursorCanvas();
+
+        class DropletParticle {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.size = Math.random() * 5 + 2.5;
+                this.speedX = (Math.random() - 0.5) * 1.8;
+                this.speedY = Math.random() * 1.8 + 0.8;
+                this.opacity = 0.75;
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                this.size *= 0.95;
+                this.opacity -= 0.025;
+            }
+            draw() {
+                cCtx.fillStyle = `rgba(225, 29, 72, ${Math.max(0, this.opacity)})`;
+                cCtx.beginPath();
+                cCtx.arc(this.x, this.y, Math.max(0.1, this.size), 0, Math.PI * 2);
+                cCtx.fill();
+            }
+        }
+
+        window.addEventListener('mousemove', (e) => {
+            if (Math.random() > 0.45) {
+                cursorParticles.push(new DropletParticle(e.clientX, e.clientY));
+            }
+        });
+
+        function animateCursorParticles() {
+            cCtx.clearRect(0, 0, cCanvas.width, cCanvas.height);
+            for (let i = cursorParticles.length - 1; i >= 0; i--) {
+                const p = cursorParticles[i];
+                p.update();
+                p.draw();
+                if (p.opacity <= 0 || p.size <= 0.5) {
+                    cursorParticles.splice(i, 1);
+                }
+            }
+            requestAnimationFrame(animateCursorParticles);
+        }
+        animateCursorParticles();
+    </script>
+</body>
+</html>

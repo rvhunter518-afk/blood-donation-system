@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Create a safe, urgent blood request for verified LifeFlow donors.">
+<title>LifeFlow | Request blood</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="../call_directory.css">
+<link rel="stylesheet" href="../assets/css/call.css">
+<link rel="stylesheet" href="../assets/css/header_menu.css?v=2.0">
+<style>
+:root{
+  --ink:#171b22; --muted:#66707c; --paper:#fffdfb; --cream:#fff8f3;
+  --red:#d62839; --red-deep:#8f1220; --red-soft:#fdeceb;
+  --green:#0f7a5c; --green-soft:#e6f6ee;
+  --line:#ecdfda; --gold:#946116; --gold-soft:#fff4dc;
+  --radius-lg:26px; --radius-md:18px; --radius-sm:12px;
+  --shadow:0 18px 40px rgba(143,18,32,.09), 0 6px 14px rgba(23,27,34,.04);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0; color:var(--ink); font:15px/1.5 'DM Sans',sans-serif;
+  background:var(--paper); min-height:100vh; overflow-x:hidden;
+}
+h1,h2,h3{font-family:'Space Grotesk',sans-serif}
+
+/* ---------- ambient background ---------- */
+#bgCanvas{position:fixed; inset:0; width:100%; height:100%; z-index:-2; pointer-events:none}
+#cursorCanvas{position:fixed; inset:0; width:100%; height:100%; z-index:30; pointer-events:none}
+.grain{position:fixed; inset:0; z-index:-1; pointer-events:none; opacity:.035;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='90' height='90'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+}
+
+/* ---------- top strip ---------- */
+.ecg-topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:8px max(24px,calc((100% - 1180px)/2));background:#fffdfbe0;backdrop-filter:blur(16px);border-bottom:1px solid var(--line);color:var(--muted);font-size:.78rem;position:relative;z-index:5}
+.ecg-live{display:flex;align-items:center;gap:9px;font-weight:700;color:var(--ink)}
+.pulse-dot{width:8px;height:8px;border-radius:50%;background:var(--red);box-shadow:0 0 10px rgba(214,40,57,.7);animation:pulseDot 1.6s ease-in-out infinite}
+@keyframes pulseDot{50%{transform:scale(1.5);opacity:.7}}
+.ecg-line{color:var(--red-deep)}
+.ecg-line i{margin-right:5px}
+
+/* ---------- header ---------- */
+header{display:flex;justify-content:space-between;align-items:center;padding:18px max(24px,calc((100% - 1180px)/2));border-bottom:1px solid var(--line);background:#fffdfbdd;backdrop-filter:blur(20px);position:sticky;top:0;z-index:6;transition:padding .25s ease,box-shadow .25s ease}
+header.scrolled{padding-top:12px;padding-bottom:12px;box-shadow:0 8px 24px rgba(143,18,32,.07)}
+.brand{display:flex;align-items:center;gap:10px;font:700 1.5rem 'Space Grotesk';color:var(--ink)}
+.brand i{display:grid;place-items:center;width:36px;height:36px;border-radius:11px;background:linear-gradient(135deg,var(--red),var(--red-deep));color:#fff;box-shadow:0 8px 18px rgba(143,18,32,.28)}
+.brand span{color:var(--red)}
+.header-links{display:flex;gap:22px;align-items:center}
+.header-links a{color:var(--muted);text-decoration:none;font-weight:700;font-size:.92rem}
+.header-links a:hover{color:var(--red)}
+.logout{border:1px solid var(--line);padding:9px 16px;border-radius:50px;background:var(--paper);transition:.25s;color:var(--ink)!important}
+.logout:hover{background:var(--red);border-color:var(--red);color:#fff!important}
+
+/* ---------- hero band ---------- */
+.hero{max-width:1180px;margin:0 auto;padding:52px 24px 20px;position:relative;z-index:2}
+.eyebrow{color:var(--red-deep);font-weight:700;font-size:.86rem;display:flex;align-items:center;gap:8px}
+.eyebrow i{color:var(--red)}
+.hero h1{font:700 clamp(2.3rem,4.6vw,3.6rem)/1.05;margin:14px 0 16px;letter-spacing:-.03em;max-width:780px}
+.hero h1 em{font-style:normal;color:var(--red)}
+.hero p.lede{color:var(--muted);font-size:1.05rem;max-width:560px;line-height:1.7;margin:0 0 26px}
+.hero-actions{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:34px}
+.btn{border:0;border-radius:50px;padding:13px 24px;font:700 .92rem 'DM Sans';cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:8px;transition:transform .25s ease,box-shadow .25s ease}
+.btn-primary{background:linear-gradient(135deg,var(--red),var(--red-deep));color:#fff;box-shadow:0 12px 26px rgba(214,40,57,.32)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 16px 32px rgba(214,40,57,.4)}
+.btn-ghost{background:var(--paper);border:1px solid var(--line);color:var(--ink)}
+.btn-ghost:hover{border-color:var(--red);color:var(--red-deep)}
+.hero-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--radius-md);overflow:hidden}
+.hero-stats div{background:var(--paper);padding:16px 18px}
+.hero-stats strong{display:block;font:700 1.3rem 'Space Grotesk';color:var(--ink)}
+.hero-stats span{color:var(--muted);font-size:.82rem}
+
+/* ---------- shell layout ---------- */
+.shell{position:relative;z-index:2;max-width:1180px;margin:0 auto;padding:16px 24px 70px;display:grid;grid-template-columns:.86fr 1.14fr;gap:26px;align-items:start}
+
+/* sidebar / tabs */
+.side{position:sticky;top:96px;display:flex;flex-direction:column;gap:16px}
+.tabcard{background:#ffffffc4;border:1px solid var(--line);border-radius:var(--radius-md);box-shadow:var(--shadow);overflow:hidden}
+.tabnav{display:flex;border-bottom:1px solid var(--line)}
+.tabnav button{flex:1;border:0;background:transparent;padding:14px 8px;font:700 .82rem 'DM Sans';color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:.2s}
+.tabnav button.active{color:var(--red-deep);border-bottom-color:var(--red)}
+.tabnav button:hover{color:var(--red-deep)}
+.tabpanel{display:none;padding:20px}
+.tabpanel.active{display:block;animation:fadeIn .35s ease both}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.tabpanel h2{font:700 1.05rem 'Space Grotesk';margin:0 0 4px}
+.tabpanel > p{margin:0 0 14px;color:var(--muted);font-size:.85rem}
+.search-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.search-grid select,.search-grid input{width:100%;padding:11px;border:1px solid var(--line);border-radius:10px;background:var(--paper);color:var(--ink);font:inherit}
+.search-grid select:focus,.search-grid input:focus{outline:0;border-color:var(--red)}
+.search-button{grid-column:1/-1;border:0;border-radius:50px;padding:12px;background:linear-gradient(135deg,var(--red),var(--red-deep));color:#fff;font:700 .88rem 'DM Sans';cursor:pointer;transition:transform .25s,box-shadow .25s}
+.search-button:hover{transform:translateY(-2px);box-shadow:0 10px 22px rgba(214,40,57,.28)}
+.search-results{display:grid;gap:9px;margin-top:14px}
+.search-summary{font-size:.8rem;font-weight:700;color:var(--green)}
+.donor-result{padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--paper);display:grid;grid-template-columns:1fr auto;gap:4px 10px}
+.donor-result strong{color:var(--ink);font-size:.9rem}
+.donor-result small{color:var(--muted)}
+.blood-badge{justify-self:end;align-self:start;padding:4px 9px;border-radius:50px;background:var(--red-soft);color:var(--red-deep);font-weight:800;font-size:.72rem}
+.empty-search{padding:12px;border-radius:10px;background:var(--red-soft);color:var(--red-deep);font-size:.84rem}
+.steps{display:grid;gap:14px}
+.step{display:flex;gap:12px;align-items:flex-start;color:var(--muted);font-size:.86rem}
+.step-icon{display:grid;place-items:center;flex:none;width:29px;height:29px;border-radius:50%;background:var(--red-soft);color:var(--red-deep);font-size:.74rem}
+.step strong{display:block;color:var(--ink);font-size:.87rem;margin-bottom:1px}
+
+.side-notes{display:grid;gap:10px}
+.trust-item{display:flex;gap:11px;align-items:flex-start;padding:13px 14px;background:#ffffffc4;border:1px solid var(--line);border-radius:var(--radius-sm);color:var(--muted);line-height:1.4;font-size:.86rem}
+.trust-item i{color:var(--green);margin-top:3px;flex:none}
+.trust-item strong{display:block;color:var(--ink);margin-bottom:1px}
+.emergency{display:flex;gap:11px;align-items:flex-start;padding:14px;border-radius:var(--radius-sm);background:var(--gold-soft);color:#7a4d0e;font-size:.82rem;line-height:1.45;border:1px solid #f3dfa9}
+.emergency i{margin-top:2px;flex:none}
+
+/* ---------- form panel ---------- */
+.panel{background:#ffffffdb;border:1px solid var(--line);box-shadow:var(--shadow);border-radius:var(--radius-lg);padding:32px;position:relative;transition:transform .15s ease,box-shadow .25s ease;will-change:transform}
+.panel:hover{box-shadow:0 24px 50px rgba(143,18,32,.12),0 8px 18px rgba(23,27,34,.05)}
+.form-heading{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:20px}
+.form-heading h2{font:700 1.5rem 'Space Grotesk';margin:0 0 5px}
+.form-heading p{margin:0;color:var(--muted)}
+.secure-badge{display:inline-flex;align-items:center;gap:7px;color:var(--red-deep);background:var(--red-soft);padding:7px 12px;border-radius:20px;font-size:.76rem;font-weight:700;white-space:nowrap}
+.secure-badge .pulse-dot{background:var(--red-deep);box-shadow:0 0 8px rgba(143,18,32,.6)}
+.notice{padding:13px;border-radius:10px;background:var(--green-soft);color:var(--green);margin-bottom:18px;font-weight:700}
+.notice.error{background:var(--red-soft);color:var(--red-deep)}
+.readiness{margin:0 0 22px;padding:13px 15px;border-radius:12px;background:var(--cream)}
+.readiness-top{display:flex;justify-content:space-between;gap:10px;font-size:.78rem;font-weight:700;color:var(--muted)}
+.readiness-top strong{color:var(--red-deep)}
+.readiness-bar{height:6px;margin-top:8px;border-radius:10px;background:var(--line);overflow:hidden}
+.readiness-bar span{display:block;width:0;height:100%;border-radius:inherit;background:linear-gradient(90deg,#ff9b77,var(--red));transition:width .4s ease}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.field.full{grid-column:1/-1}
+.field label{display:block;font-weight:700;margin:0 0 7px;font-size:.9rem}
+.field input,.field select,.field textarea{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px 14px;font:inherit;background:#fffffff2;color:var(--ink);transition:border-color .2s,box-shadow .2s}
+.field input:focus,.field select:focus,.field textarea:focus{outline:0;border-color:var(--red);box-shadow:0 0 0 4px rgba(214,40,57,.1)}
+.field textarea{min-height:96px;resize:vertical}
+.help{display:flex;justify-content:space-between;color:var(--muted);font-size:.76rem;margin-top:5px}
+.submit{position:relative;overflow:hidden;width:100%;border:0;border-radius:50px;background:linear-gradient(135deg,var(--red),var(--red-deep));color:#fff;padding:15px;font:700 1rem inherit;cursor:pointer;margin-top:22px;box-shadow:0 12px 28px rgba(214,40,57,.3);transition:transform .25s,box-shadow .25s}
+.submit:hover{transform:translateY(-2px);box-shadow:0 16px 34px rgba(214,40,57,.4)}
+.submit:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+.submit i{transition:transform .25s}
+.submit:hover i{transform:translateX(4px)}
+.ripple{position:absolute;border-radius:50%;background:rgba(255,255,255,.45);transform:scale(0);animation:ripple .55s ease-out;pointer-events:none}
+@keyframes ripple{to{transform:scale(5);opacity:0}}
+.tip{margin-top:18px;padding:13px 15px;background:var(--gold-soft);border-radius:10px;color:#7a4d0e;font-size:.86rem;line-height:1.5}
+.tip i{margin-right:6px}
+
+/* ---------- info panel ---------- */
+.info-panel{max-width:1180px;margin:0 auto;padding:0 24px 70px;position:relative;z-index:2}
+.info-panel-inner{padding:30px;border:1px solid var(--line);border-radius:var(--radius-lg);background:#ffffffc4;box-shadow:var(--shadow)}
+.info-panel h2{font:700 1.3rem 'Space Grotesk';margin:0 0 6px}
+.info-panel-inner > p{color:var(--muted);margin:0 0 20px}
+.info-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.info-item{padding:18px;border-radius:var(--radius-sm);background:var(--paper);border:1px solid var(--line)}
+.info-item i{color:var(--red);font-size:1.1rem;margin-bottom:10px;display:block}
+.info-item strong{display:block;margin-bottom:5px}
+.info-item span{color:var(--muted);font-size:.85rem;line-height:1.5}
+
+/* ---------- footer ---------- */
+.site-footer{display:flex;justify-content:space-between;gap:20px;max-width:1180px;margin:0 auto;padding:26px 24px 40px;color:var(--muted);font-size:.8rem;border-top:1px solid var(--line);position:relative;z-index:2}
+.site-footer strong{display:block;color:var(--ink);font:700 1rem 'Space Grotesk';margin-bottom:4px}
+.site-footer strong i{color:var(--red);margin-right:6px}
+.site-footer span{display:block;line-height:1.5;max-width:360px}
+
+@media(max-width:960px){
+  .shell{grid-template-columns:1fr}
+  .side{position:static}
+  .hero-stats{grid-template-columns:1fr 1fr}
+}
+@media(max-width:640px){
+  header{padding:16px 20px}
+  .header-links a:first-child{display:none}
+  .hero{padding-top:36px}
+  .hero-stats{grid-template-columns:1fr}
+  .grid{grid-template-columns:1fr}
+  .field.full{grid-column:auto}
+  .info-grid{grid-template-columns:1fr}
+  .form-heading{display:block}
+  .secure-badge{margin-top:10px}
+  .site-footer{display:block}
+  .site-footer>span{margin-top:10px}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+}
+</style>
+</head>
+<body class="user-page" data-theme="light">
+<canvas id="bgCanvas" aria-hidden="true"></canvas>
+<div class="grain" aria-hidden="true"></div>
+<canvas id="cursorCanvas" aria-hidden="true"></canvas>
+
+<div class="ecg-topbar">
+  <div class="ecg-live"><span class="pulse-dot"></span>LifeFlow network is live</div>
+  <div class="ecg-line"><i class="fas fa-heart-pulse"></i>Matching donors safely, in real time</div>
+</div>
+
+<header>
+  <div class="brand"><i class="fas fa-droplet"></i><span>LifeFlow</span></div>
+  <div class="header-action-bar">
+   
+    </a>
+    <button type="button" class="header-menu-btn" id="headerMenuBtn" title="Open Navigation Menu">
+      <i class="fas fa-bars"></i>
+      <span>Menu</span>
+    </button>
+
+    <a href="../hospital/directory.php" title="Hospital Directory" style="display:inline-flex;align-items:center;gap:7px;padding:8px 15px;border:1px solid rgba(37,99,235,0.25);border-radius:50px;background:rgba(37,99,235,0.07);color:#1d4ed8;font-weight:700;font-size:0.83rem;text-decoration:none;transition:all 0.25s;white-space:nowrap;"><i class="fas fa-hospital"></i> Hospitals</a>
+    
+    <div class="header-profile-pill" id="headerUserProfile" title="User Profile">
+      <i class="fas fa-user-circle"></i>
+      <span class="profile-name" id="headerUserName">User Profile</span>
+      <span class="role-tag">Requester</span>
+    </div>
+    <button type="button" class="header-call-btn" id="openCallDirectoryBtn" title="Direct Phone Dial Registered Donors & Requesters">
+      <span class="call-pulse-dot"></span>
+      <i class="fas fa-phone-volume"></i>
+      <span class="call-btn-text">Call Directory</span>
+    </button>
+    <a href="../logout.php" class="header-logout-btn" title="Sign out">
+      <i class="fas fa-arrow-right-from-bracket"></i>
+      <span>Sign out</span>
+    </a>
+  </div>
+</header>
+
+<main class="hero">
+  <div class="eyebrow"><i class="fas fa-hospital"></i>Patient support desk</div>
+  <h1>Find the right blood, <em>right on time.</em></h1>
+  <p class="lede">Tell verified donors what's needed, where it's needed, and how quickly your care team needs help — and reach them the moment your request goes live.</p>
+  <div class="hero-actions">
+    <a href="#request-title" class="btn btn-primary"><i class="fas fa-paper-plane"></i> Send a request</a>
+    <a href="../map.php?view=donors" class="btn btn-ghost" style="border-color:#10b981;color:#059669;"><i class="fas fa-map-location-dot"></i> View Donors on Map</a>
+    <a href="#sidePanel" class="btn btn-ghost"><i class="fas fa-magnifying-glass"></i> Search donors</a>
+  </div>
+  <div class="hero-stats">
+    <div><strong>&lt; 2 min</strong><span>To publish a request</span></div>
+    <div><strong>8 groups</strong><span>Every blood type covered</span></div>
+    <div><strong>24/7</strong><span>Donor dispatch is monitored</span></div>
+  </div>
+</main>
+
+<main class="shell">
+  <aside class="side" id="sidePanel">
+    <div class="tabcard">
+      <div class="tabnav" role="tablist" aria-label="Donor tools">
+        <button type="button" class="active" data-tab="search" role="tab" aria-selected="true">Find donors</button>
+        <button type="button" data-tab="activity" role="tab" aria-selected="false">Your activity</button>
+        <button type="button" data-tab="journey" role="tab" aria-selected="false">How it works</button>
+      </div>
+
+      <div class="tabpanel active" data-panel="search">
+        <h2><i class="fas fa-magnifying-glass" style="color:var(--red)"></i> Find available donors</h2>
+        <p>Search registered donors by exact blood group and city.</p>
+        <form id="searchForm" class="search-grid">
+          <select id="searchBloodType" required>
+            <option value="">Blood group</option>
+            <option>O+</option><option>O-</option><option>A+</option><option>A-</option>
+            <option>B+</option><option>B-</option><option>AB+</option><option>AB-</option>
+          </select>
+          <input id="searchCity" type="text" placeholder="City (optional)">
+          <button class="search-button" type="submit">Search matching donors</button>
+        </form>
+        <div id="searchResults" class="search-results" aria-live="polite"></div>
+      </div>
+
+      <div class="tabpanel" data-panel="activity">
+        <h2><i class="fas fa-clock-rotate-left" style="color:var(--red)"></i> Your activity</h2>
+        <p>Track requests and donor responses securely in one place.</p>
+        <div id="activityResults" class="search-results" aria-live="polite">
+          <div class="search-summary">Loading your latest activity...</div>
+        </div>
+      </div>
+
+      <div class="tabpanel" data-panel="journey">
+        <h2>Your request journey</h2>
+        <div class="steps">
+          <div class="step"><span class="step-icon"><i class="fas fa-pen"></i></span><div><strong>1. Share the need</strong>Tell us the blood group and care location.</div></div>
+          <div class="step"><span class="step-icon"><i class="fas fa-bell"></i></span><div><strong>2. Donors are notified</strong>Matching donors can review your open request.</div></div>
+          <div class="step"><span class="step-icon"><i class="fas fa-handshake"></i></span><div><strong>3. Coordinate safely</strong>A donor contacts the listed hospital or coordinator.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-notes">
+      <div class="trust-item"><i class="fas fa-shield-heart"></i><div><strong>Privacy first</strong>Only the details needed to coordinate a donation are shared.</div></div>
+      <div class="trust-item"><i class="fas fa-location-dot"></i><div><strong>Clear directions</strong>Donors see the hospital and city before offering help.</div></div>
+      <div class="emergency"><i class="fas fa-triangle-exclamation"></i><div><strong>Need blood immediately?</strong> Ask your hospital blood bank to start its emergency protocol while this request reaches donors.</div></div>
+    </div>
+  </aside>
+
+  <section class="panel" aria-labelledby="request-title">
+    <div class="form-heading">
+      <div><h2 id="request-title">New blood request</h2><p>Complete the form so nearby donors can respond safely and quickly.</p></div>
+      <span class="secure-badge"><span class="pulse-dot"></span> Secure form</span>
+    </div>
+    <div id="status" class="notice" role="status" hidden></div>
+    <div class="readiness" aria-live="polite">
+      <div class="readiness-top"><span>Request readiness</span><strong id="readinessLabel">Getting started</strong></div>
+      <div class="readiness-bar"><span id="readinessBar"></span></div>
+    </div>
+    <form action="../request.php" method="post">
+      <div class="grid">
+        <div class="field"><label for="patient_name">Patient name</label><input id="patient_name" name="patient_name" autocomplete="name" required></div>
+        <div class="field"><label for="blood_type">Blood group needed</label>
+          <select id="blood_type" name="blood_type" required>
+            <option value="">Choose group</option>
+            <option>O+</option><option>O-</option><option>A+</option><option>A-</option>
+            <option>B+</option><option>B-</option><option>AB+</option><option>AB-</option>
+          </select>
+        </div>
+        <div class="field"><label for="units">Units needed</label><input id="units" name="units" type="number" min="1" max="9" value="1" required></div>
+        <div class="field"><label for="urgency">Urgency</label>
+          <select id="urgency" name="urgency">
+            <option value="critical">Critical — now</option>
+            <option value="urgent" selected>Urgent — today</option>
+            <option value="routine">Routine — next 48 hours</option>
+          </select>
+        </div>
+        <div class="field full"><label for="hospital">Hospital or care center</label><input id="hospital" name="hospital" placeholder="Where should the donor report?" autocomplete="organization" required></div>
+        <div class="field"><label for="city">City / district</label><input id="city" name="city" autocomplete="address-level2" required></div>
+        <div class="field"><label for="contact_phone">Best contact number</label><input id="contact_phone" name="contact_phone" type="tel" autocomplete="tel" required></div>
+        <div class="field full">
+          <label for="notes">Additional information <span style="color:var(--muted);font-weight:400">(optional)</span></label>
+          <textarea id="notes" name="notes" maxlength="500" placeholder="Ward, coordinator name, timing, or other useful context"></textarea>
+          <div class="help"><span>Do not include passwords or financial details.</span><span id="counter">0 / 500</span></div>
+        </div>
+      </div>
+      <button class="submit" type="submit"><i class="fas fa-paper-plane"></i> Send request to matching donors</button>
+    </form>
+    <div class="tip"><i class="fas fa-circle-info"></i><strong>Medical note:</strong> Contact the hospital blood bank for immediate clinical guidance. LifeFlow helps coordinate donors and does not replace emergency services.</div>
+  </section>
+</main>
+
+<section class="info-panel" aria-labelledby="support-title">
+  <div class="info-panel-inner">
+    <h2 id="support-title"><i class="fas fa-circle-info" style="color:var(--red)"></i> Request support guide</h2>
+    <p>Helpful information for coordinating a safe and fast blood response.</p>
+    <div class="info-grid">
+      <div class="info-item"><i class="fas fa-file-medical"></i><strong>Keep details ready</strong><span>Confirm the blood group, number of units, hospital ward, and coordinator phone number before submitting.</span></div>
+      <div class="info-item"><i class="fas fa-user-shield"></i><strong>Protect privacy</strong><span>Share only care coordination details. Never include passwords, payment information, or identity documents.</span></div>
+      <div class="info-item"><i class="fas fa-phone-volume"></i><strong>For emergencies</strong><span>Contact the hospital blood bank and local emergency services immediately. Online matching is additional support.</span></div>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div><strong><i class="fas fa-droplet"></i>LifeFlow</strong><span>Verified donor coordination for urgent care teams.</span></div>
+  <span>For emergencies, contact your hospital blood bank and local emergency services.</span>
+</footer>
+<script>window.creatorio_chatbotid="02c6034c-ee01-4a6b-ac9d-08e1f32ffa9f";</script>
+<script src="https://app.creator.io/chat-widget-v1.js" defer></script>
+<script>
+/* ---------- tab switching ---------- */
+const tabButtons = document.querySelectorAll('.tabnav button');
+const tabPanels = document.querySelectorAll('.tabpanel');
+tabButtons.forEach(btn => {
+  btn.addEventListener('click', () => {
+    tabButtons.forEach(b => { b.classList.remove('active'); b.setAttribute('aria-selected','false'); });
+    tabPanels.forEach(p => p.classList.remove('active'));
+    btn.classList.add('active'); btn.setAttribute('aria-selected','true');
+    document.querySelector('.tabpanel[data-panel="' + btn.dataset.tab + '"]').classList.add('active');
+  });
+});
+
+/* ---------- status banner from query params ---------- */
+const status = document.getElementById('status');
+const params = new URLSearchParams(window.location.search);
+if (params.has('sent')) { status.hidden = false; status.textContent = 'Request sent. Matching donors can now see it.'; }
+if (params.has('error')) { status.hidden = false; status.classList.add('error'); status.textContent = 'Please complete all required fields.'; }
+
+/* ---------- notes counter ---------- */
+const notes = document.getElementById('notes');
+const counter = document.getElementById('counter');
+notes.addEventListener('input', () => { counter.textContent = notes.value.length + ' / 500'; });
+
+/* ---------- activity feed ---------- */
+const activityResults = document.getElementById('activityResults');
+const escapeActivity = value => String(value).replace(/[&<>"']/g, character => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[character]));
+Promise.all([fetch('requests.php'), fetch('notifications.php')]).then(async ([requestsResponse, notificationsResponse]) => {
+  const requestsData = await requestsResponse.json();
+  const notificationsData = await notificationsResponse.json();
+  if (!requestsResponse.ok || !notificationsResponse.ok) throw new Error('Activity is unavailable right now.');
+  const requests = requestsData.requests || [];
+  const notifications = notificationsData.notifications || [];
+  activityResults.innerHTML = '';
+  if (!requests.length && !notifications.length) {
+    activityResults.innerHTML = '<div class="empty-search">No requests or donor updates yet.</div>';
+    return;
+  }
+  requests.slice(0, 5).forEach(request => {
+    activityResults.innerHTML += '<article class="donor-result"><div><strong>Request #' + request.id + ' · ' + escapeActivity(request.patient_name) + '</strong><br><small>' + escapeActivity(request.hospital) + ', ' + escapeActivity(request.city) + '</small></div><span class="blood-badge">' + escapeActivity(request.blood_type) + '</span><small>' + escapeActivity(request.status) + ' · ' + request.units + ' unit(s)</small></article>';
+  });
+  notifications.slice(0, 5).forEach(notification => {
+    activityResults.innerHTML += '<article class="donor-result"><div><strong><i class="fas fa-bell"></i> Donor update</strong><br><small>' + escapeActivity(notification.message) + '</small></div><small>' + escapeActivity(notification.created_at) + '</small></article>';
+  });
+}).catch(error => { activityResults.innerHTML = '<div class="empty-search">' + escapeActivity(error.message) + '</div>'; });
+
+/* ---------- donor search ---------- */
+const searchForm = document.getElementById('searchForm');
+const searchResults = document.getElementById('searchResults');
+searchForm.addEventListener('submit', async event => {
+  event.preventDefault();
+  const bloodType = document.getElementById('searchBloodType').value;
+  const city = document.getElementById('searchCity').value.trim();
+  searchResults.innerHTML = '<div class="search-summary">Searching verified donors...</div>';
+  try {
+    const response = await fetch('../search_donors.php?blood_type=' + encodeURIComponent(bloodType) + '&city=' + encodeURIComponent(city), { headers: { Accept: 'application/json' } });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Search failed.');
+    searchResults.innerHTML = '<div class="search-summary">' + data.count + ' matching donor' + (data.count === 1 ? '' : 's') + ' found</div>';
+    if (!data.count) {
+      searchResults.innerHTML += '<div class="empty-search">No matching donors found. Try another nearby city.</div>';
+      return;
+    }
+    data.donors.forEach(donor => {
+      const presenceStatus = donor.presence_status || 'offline';
+      const presenceLabels = { online: 'Online', in_call: 'In Call', offline: 'Offline' };
+      const pLabel = presenceLabels[presenceStatus] || 'Offline';
+
+      searchResults.innerHTML += `
+        <article class="donor-result" data-user-id="${donor.user_id}" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:12px;">
+          <div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <strong>${escapeHtml(donor.name)}</strong>
+              <span class="blood-badge" style="position:static;">${escapeHtml(donor.blood_type)}</span>
+            </div>
+            <small style="display:block; margin:2px 0 6px;">${escapeHtml(donor.city)} · ${escapeHtml(donor.availability)}</small>
+            <span class="presence-badge user-presence-${donor.user_id} presence-${presenceStatus}">
+              <span class="presence-dot"></span> <span>${pLabel}</span>
+            </span>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <button type="button" class="btn-webrtc-call" data-webrtc-call
+                    data-receiver-id="${donor.user_id}"
+                    data-receiver-name="${escapeHtml(donor.name)}"
+                    data-blood-type="${escapeHtml(donor.blood_type)}"
+                    data-role="Donor"
+                    data-call-type="audio"
+                    data-context-type="donor_search"
+                    title="Direct WebRTC audio call">
+              <i class="fas fa-phone"></i> Call
+            </button>
+            <button type="button" class="btn-webrtc-call btn-video" data-webrtc-call
+                    data-receiver-id="${donor.user_id}"
+                    data-receiver-name="${escapeHtml(donor.name)}"
+                    data-blood-type="${escapeHtml(donor.blood_type)}"
+                    data-role="Donor"
+                    data-call-type="video"
+                    data-context-type="donor_search"
+                    title="Direct WebRTC video call">
+              <i class="fas fa-video"></i>
+            </button>
+          </div>
+        </article>
+      `;
+    });
+  } catch (error) {
+    searchResults.innerHTML = '<div class="empty-search">' + escapeHtml(error.message) + '</div>';
+  }
+});
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, character => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[character]));
+}
+
+/* ---------- request readiness ---------- */
+const requiredFields = [...document.querySelectorAll('form [required]')];
+const readinessBar = document.getElementById('readinessBar');
+const readinessLabel = document.getElementById('readinessLabel');
+function updateReadiness() {
+  const complete = requiredFields.filter(field => field.value.trim() !== '').length;
+  const percent = Math.round((complete / requiredFields.length) * 100);
+  readinessBar.style.width = percent + '%';
+  readinessLabel.textContent = percent === 100 ? 'Ready to send' : percent + '% complete';
+}
+requiredFields.forEach(field => field.addEventListener('input', updateReadiness));
+updateReadiness();
+
+/* ---------- sticky header shrink ---------- */
+const navbar = document.querySelector('header');
+window.addEventListener('scroll', () => navbar.classList.toggle('scrolled', window.scrollY > 12));
+
+/* ---------- panel tilt ---------- */
+const panel = document.querySelector('.panel');
+panel.addEventListener('pointermove', event => {
+  const rect = panel.getBoundingClientRect();
+  const rotateX = ((event.clientY - rect.top) / rect.height - .5) * -1.4;
+  const rotateY = ((event.clientX - rect.left) / rect.width - .5) * 1.4;
+  panel.style.transform = 'perspective(1000px) rotateX(' + rotateX + 'deg) rotateY(' + rotateY + 'deg)';
+});
+panel.addEventListener('pointerleave', () => { panel.style.transform = ''; });
+
+/* ---------- submit ripple ---------- */
+document.querySelector('.submit').addEventListener('click', event => {
+  const ripple = document.createElement('span');
+  const rect = event.currentTarget.getBoundingClientRect();
+  ripple.className = 'ripple';
+  ripple.style.width = ripple.style.height = Math.max(rect.width, rect.height) + 'px';
+  ripple.style.left = event.clientX - rect.left - rect.width / 2 + 'px';
+  ripple.style.top = event.clientY - rect.top - rect.height / 2 + 'px';
+  event.currentTarget.appendChild(ripple);
+  window.setTimeout(() => ripple.remove(), 600);
+});
+
+/* ---------- cursor blood-drop trail ---------- */
+const cursorCanvas = document.getElementById('cursorCanvas');
+const cursorCtx = cursorCanvas.getContext('2d');
+const particles = [];
+function resizeCursor() { cursorCanvas.width = window.innerWidth; cursorCanvas.height = window.innerHeight; }
+function addDrop(x, y) { particles.push({x:x,y:y,size:Math.random()*6+3,vx:(Math.random()-.5)*2,vy:Math.random()*2+1,opacity:.8}); }
+function animateCursor() {
+  cursorCtx.clearRect(0, 0, cursorCanvas.width, cursorCanvas.height);
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const p = particles[i]; p.x += p.vx; p.y += p.vy; p.size *= .95; p.opacity -= .025;
+    cursorCtx.fillStyle = 'rgba(214,40,57,' + Math.max(0,p.opacity) + ')';
+    cursorCtx.beginPath(); cursorCtx.arc(p.x,p.y,Math.max(.1,p.size),0,Math.PI*2); cursorCtx.fill();
+    if (p.opacity <= 0 || p.size <= .5) particles.splice(i,1);
+  }
+  requestAnimationFrame(animateCursor);
+}
+window.addEventListener('resize', resizeCursor);
+window.addEventListener('mousemove', event => { if (Math.random() > .4) addDrop(event.clientX,event.clientY); });
+resizeCursor(); animateCursor();
+
+/* ---------- ambient background: drifting cells + heartbeat line ---------- */
+const bgCanvas = document.getElementById('bgCanvas');
+const bgCtx = bgCanvas.getContext('2d');
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+let bgW, bgH;
+function resizeBg() { bgW = bgCanvas.width = window.innerWidth; bgH = bgCanvas.height = window.innerHeight; }
+resizeBg(); window.addEventListener('resize', resizeBg);
+
+const cells = Array.from({length:7}, () => ({
+  x: Math.random()*1, y: Math.random()*1,
+  r: 90 + Math.random()*160,
+  vx: (Math.random()-.5)*0.00012,
+  vy: (Math.random()-.5)*0.00012,
+  hue: Math.random() > .5 ? 'rgba(214,40,57,' : 'rgba(15,122,92,'
+}));
+
+let waveT = 0;
+function drawHeartbeatLine(scrollFactor) {
+  const y = 46;
+  bgCtx.save();
+  bgCtx.globalAlpha = .16;
+  bgCtx.strokeStyle = '#d62839';
+  bgCtx.lineWidth = 1.4;
+  bgCtx.beginPath();
+  const step = 6;
+  for (let x = 0; x <= bgW; x += step) {
+    const phase = (x + waveT) * 0.02;
+    let y2 = y + Math.sin(phase*0.6) * 3;
+    const spike = ((x + waveT) % 260);
+    if (spike > 40 && spike < 70) y2 -= (spike-40) * 1.7;
+    else if (spike >= 70 && spike < 100) y2 += (spike-70) * 1.7 - 51;
+    if (x === 0) bgCtx.moveTo(x, y2); else bgCtx.lineTo(x, y2);
+  }
+  bgCtx.stroke();
+  bgCtx.restore();
+}
+
+function animateBg() {
+  bgCtx.clearRect(0,0,bgW,bgH);
+  cells.forEach(c => {
+    c.x += c.vx; c.y += c.vy;
+    if (c.x < -0.2 || c.x > 1.2) c.vx *= -1;
+    if (c.y < -0.2 || c.y > 1.2) c.vy *= -1;
+    const cx = c.x*bgW, cy = c.y*bgH;
+    const grad = bgCtx.createRadialGradient(cx,cy,0,cx,cy,c.r);
+    grad.addColorStop(0, c.hue + '.10)');
+    grad.addColorStop(1, c.hue + '0)');
+    bgCtx.fillStyle = grad;
+    bgCtx.beginPath(); bgCtx.arc(cx,cy,c.r,0,Math.PI*2); bgCtx.fill();
+  });
+  drawHeartbeatLine();
+  waveT += 1.1;
+  if (!reduceMotion) requestAnimationFrame(animateBg);
+}
+animateBg();
+</script>
+<script src="../call_directory.js"></script>
+
+<!-- WebRTC Call Interface Components -->
+<div id="webrtcIncomingModal" role="dialog" aria-modal="true" aria-label="Incoming Call" style="display: none;">
+    <div class="incoming-call-box">
+        <div class="incoming-radar-wrap">
+            <div class="incoming-radar-wave"></div>
+            <div class="incoming-radar-wave"></div>
+            <div class="incoming-radar-wave"></div>
+            <div class="incoming-avatar">
+                <i class="fas fa-user"></i>
+            </div>
+        </div>
+        <h3 id="incomingCallerName">Caller</h3>
+        <div class="incoming-meta-pill">
+            <span id="incomingCallerRole">Donor</span>
+            <span>•</span>
+            <span class="blood-type" id="incomingBloodType">O+</span>
+            <span id="incomingCallTypeBadge" style="margin-left:4px;"><i class="fas fa-phone"></i> Audio</span>
+        </div>
+        <div class="incoming-status-text">
+            <i class="fas fa-phone-volume"></i> Incoming BloodConnect Call...
+        </div>
+        <div class="incoming-actions">
+            <button type="button" class="incoming-btn btn-decline" id="btnDeclineCall" title="Decline Call">
+                <div class="incoming-btn-icon"><i class="fas fa-phone-slash"></i></div>
+                <span>Decline</span>
+            </button>
+            <button type="button" class="incoming-btn btn-accept" id="btnAcceptCall" title="Accept Call">
+                <div class="incoming-btn-icon"><i class="fas fa-phone"></i></div>
+                <span>Accept</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<div id="webrtcActiveCallModal" role="dialog" aria-modal="true" aria-label="Active Call" style="display: none;">
+    <div class="active-call-container">
+        <div class="active-call-topbar">
+            <div class="call-badge-live">
+                <span class="live-indicator-dot"></span>
+                <span id="activeCallTypeLabel">Live Audio</span>
+            </div>
+            <button type="button" class="call-btn-ctrl" id="btnMinimizeCall" style="width:34px;height:34px;font-size:0.85rem;" title="Minimize Call">
+                <i class="fas fa-minus"></i>
+            </button>
+        </div>
+        <div class="video-grid-container" id="videoGridContainer">
+            <video id="remoteVideo" class="remote-video-el" autoplay playsinline></video>
+            <div class="local-pip-container" id="localPipContainer">
+                <video id="localVideo" class="local-video-el" autoplay playsinline muted></video>
+            </div>
+        </div>
+        <div class="active-call-main" id="audioCallMain">
+            <div class="audio-call-visual">
+                <div class="audio-avatar-wrap">
+                    <div class="audio-sound-ring"></div>
+                    <div class="audio-avatar" id="activeAudioAvatar"><i class="fas fa-user"></i></div>
+                </div>
+                <h2 class="active-peer-name" id="activePeerName">User</h2>
+                <div class="active-peer-meta" id="activePeerMeta">Donor • O+</div>
+                <div class="active-call-timer" id="activeCallTimer">00:00</div>
+                <div class="active-call-status" id="activeCallStatusText">Connecting...</div>
+            </div>
+        </div>
+        <div class="active-call-controls">
+            <button type="button" class="call-btn-ctrl" id="btnToggleMic" title="Mute Microphone">
+                <i class="fas fa-microphone"></i>
+            </button>
+            <button type="button" class="call-btn-ctrl" id="btnToggleVideo" title="Switch to Video">
+                <i class="fas fa-video"></i>
+            </button>
+            <button type="button" class="call-btn-ctrl btn-hangup" id="btnEndActiveCall" title="End Call">
+                <i class="fas fa-phone-slash"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<audio id="remoteAudio" autoplay playsinline></audio>
+<div id="webrtcToastContainer"></div>
+<script src="../assets/js/call.js"></script>
+<script src="../assets/js/header_menu.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    BloodConnectHeader.init({ role: 'user', rootPath: '../' });
+});
+</script>
+</body>
+</html>
